@@ -9,8 +9,8 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import pickle
+import numpy as np
 
 # Load the model
 with open('best_model.pkl', 'rb') as f:
