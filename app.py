@@ -9,12 +9,11 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
-import pickle
+from joblib import load
 import numpy as np
 
-# Load the model
-with open('best_model.pkl', 'rb') as f:
-    model = pickle.load(f)
+# Load the best trained model using joblib
+model = load('best_model.joblib')
 
 # Title and description of the app
 st.title("Smog Level Prediction")
@@ -33,7 +32,7 @@ make = st.selectbox("Make", ['Ford', 'Chevrolet', 'BMW', 'Toyota', 'Nissan', 'Ho
 vehicle_class = st.selectbox("Vehicle Class", ['SUV', 'Sedan', 'Truck', 'Coupe'])  # Example classes
 transmission = st.selectbox("Transmission", ['Automatic', 'Manual'])  # Example transmission types
 
-# Prepare the input data
+# Prepare the input data as a DataFrame
 input_data = pd.DataFrame({
     'Engine_Size': [engine_size],
     'Cylinders': [cylinders],
@@ -46,7 +45,6 @@ input_data = pd.DataFrame({
 })
 
 # For categorical features, encoding them (same as done during training)
-# Load label encoders (assuming you saved them)
 label_encoders = {
     'Make': {'Ford': 0, 'Chevrolet': 1, 'BMW': 2, 'Toyota': 3, 'Nissan': 4, 'Honda': 5},
     'Vehicle_Class': {'SUV': 0, 'Sedan': 1, 'Truck': 2, 'Coupe': 3},
@@ -68,4 +66,3 @@ if st.button("Predict Smog Level"):
         st.warning("The predicted smog level is MEDIUM.")
     else:
         st.error("The predicted smog level is HIGH.")
-
