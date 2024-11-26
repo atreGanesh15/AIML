@@ -15,7 +15,6 @@ import numpy as np
 # Load the model
 with open('best_model.pkl', 'rb') as f:
     model = pickle.load(f)
-)
 
 # Title and description of the app
 st.title("Smog Level Prediction")
