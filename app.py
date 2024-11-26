@@ -8,34 +8,63 @@ Original file is located at
 """
 
 import streamlit as st
-import pickle
+import pandas as pd
+from joblib import load
 import numpy as np
 
-# Load the saved model
-with open('best_model.joblib', 'rb') as file:
-    model = pickle.load(file)
+# Load the best trained model
+model = load('best_model.joblib')
 
-# Title and description
-st.title("Customer Churn Prediction")
-st.write("Enter customer details to predict churn.")
+# Title and description of the app
+st.title("Smog Level Prediction")
+st.write("""
+    Enter the details of the vehicle to predict its smog level.
+    The model will predict the smog level based on engine size, fuel consumption, and other attributes.
+""")
 
-# Input fields for user to provide customer data
-age = st.number_input("Age", min_value=0, max_value=120, step=1, value=30)
-total_purchase = st.number_input("Total Purchase", min_value=0.0, step=0.1, value=5000.0)
-account_manager = st.selectbox("Account Manager Assigned?", [0, 1], format_func=lambda x: "Yes" if x == 1 else "No")
-years = st.number_input("Years with the Company", min_value=0.0, step=0.1, value=3.0)
-num_sites = st.number_input("Number of Sites", min_value=0, step=1, value=5)
+# Input fields for the user to enter vehicle details
+engine_size = st.number_input("Engine Size (L)", min_value=0.0, max_value=10.0, step=0.1, value=2.0)
+cylinders = st.number_input("Cylinders", min_value=1, max_value=12, step=1, value=4)
+fuel_consumption_city = st.number_input("Fuel Consumption in City (L/100km)", min_value=0.0, step=0.1, value=8.0)
+fuel_consumption_hwy = st.number_input("Fuel Consumption in Highway (L/100km)", min_value=0.0, step=0.1, value=6.0)
+co2_emissions = st.number_input("CO2 Emissions (g/km)", min_value=0, step=1, value=150)
+make = st.selectbox("Make", ['Ford', 'Chevrolet', 'BMW', 'Toyota', 'Nissan', 'Honda'])  # Example makes
+vehicle_class = st.selectbox("Vehicle Class", ['SUV', 'Sedan', 'Truck', 'Coupe'])  # Example classes
+transmission = st.selectbox("Transmission", ['Automatic', 'Manual'])  # Example transmission types
 
-# Button to make predictions
-if st.button("Predict"):
-    # Prepare input features
-    input_features = np.array([[age, total_purchase, account_manager, years, num_sites]])
+# Prepare the input data
+input_data = pd.DataFrame({
+    'Engine_Size': [engine_size],
+    'Cylinders': [cylinders],
+    'Fuel_Consumption_in_City': [fuel_consumption_city],
+    'Fuel_Consumption_in_City_Hwy': [fuel_consumption_hwy],
+    'CO2_Emissions': [co2_emissions],
+    'Make': [make],
+    'Vehicle_Class': [vehicle_class],
+    'Transmission': [transmission]
+})
 
-    # Make prediction
-    prediction = model.predict(input_features)[0]
+# For categorical features, encoding them (same as done during training)
+# Load label encoders (assuming you saved them)
+label_encoders = {
+    'Make': {'Ford': 0, 'Chevrolet': 1, 'BMW': 2, 'Toyota': 3, 'Nissan': 4, 'Honda': 5},
+    'Vehicle_Class': {'SUV': 0, 'Sedan': 1, 'Truck': 2, 'Coupe': 3},
+    'Transmission': {'Automatic': 0, 'Manual': 1}
+}
 
-    # Display result
-    if prediction == 1:
-        st.error("The customer is likely to churn.")
+input_data['Make'] = input_data['Make'].map(label_encoders['Make'])
+input_data['Vehicle_Class'] = input_data['Vehicle_Class'].map(label_encoders['Vehicle_Class'])
+input_data['Transmission'] = input_data['Transmission'].map(label_encoders['Transmission'])
+
+# Make prediction when the button is pressed
+if st.button("Predict Smog Level"):
+    prediction = model.predict(input_data)[0]
+
+    # Display the prediction result
+    if prediction == 0:
+        st.success("The predicted smog level is LOW.")
+    elif prediction == 1:
+        st.warning("The predicted smog level is MEDIUM.")
     else:
-        st.success("The customer is unlikely to churn.")
+        st.error("The predicted smog level is HIGH.")
+
