@@ -9,11 +9,13 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
-from joblib import load
 import numpy as np
+import pickle
 
-# Load the best trained model
-model = load('best_model.joblib')
+# Load the model
+with open('best_model.pkl', 'rb') as f:
+    model = pickle.load(f)
+)
 
 # Title and description of the app
 st.title("Smog Level Prediction")
