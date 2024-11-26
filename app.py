@@ -9,57 +9,39 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
-from joblib import load
-import numpy as np
 
-# Load the best trained model using joblib
-model = load('best_model.joblib')
+# Error handling for joblib import
+try:
+    from joblib import load
+except ImportError as e:
+    st.error("Error loading the joblib module. Please ensure it's installed.")
+    raise e  # Exit if the import fails
 
-# Title and description of the app
+# Try loading the model
+try:
+    model = load('best_model.joblib')
+except Exception as e:
+    st.error(f"Error loading the model: {e}")
+    raise e
+
+# The rest of your app code
 st.title("Smog Level Prediction")
-st.write("""
-    Enter the details of the vehicle to predict its smog level.
-    The model will predict the smog level based on engine size, fuel consumption, and other attributes.
-""")
+st.write("Enter vehicle details to predict smog levels.")
 
-# Input fields for the user to enter vehicle details
-engine_size = st.number_input("Engine Size (L)", min_value=0.0, max_value=10.0, step=0.1, value=2.0)
-cylinders = st.number_input("Cylinders", min_value=1, max_value=12, step=1, value=4)
-fuel_consumption_city = st.number_input("Fuel Consumption in City (L/100km)", min_value=0.0, step=0.1, value=8.0)
-fuel_consumption_hwy = st.number_input("Fuel Consumption in Highway (L/100km)", min_value=0.0, step=0.1, value=6.0)
-co2_emissions = st.number_input("CO2 Emissions (g/km)", min_value=0, step=1, value=150)
-make = st.selectbox("Make", ['Ford', 'Chevrolet', 'BMW', 'Toyota', 'Nissan', 'Honda'])  # Example makes
-vehicle_class = st.selectbox("Vehicle Class", ['SUV', 'Sedan', 'Truck', 'Coupe'])  # Example classes
-transmission = st.selectbox("Transmission", ['Automatic', 'Manual'])  # Example transmission types
+# Input fields for vehicle data (replace with your actual fields)
+engine_size = st.number_input("Engine Size (L)", min_value=0.0, max_value=10.0, value=2.0)
+cylinders = st.number_input("Cylinders", min_value=1, max_value=12, value=4)
 
-# Prepare the input data as a DataFrame
-input_data = pd.DataFrame({
-    'Engine_Size': [engine_size],
-    'Cylinders': [cylinders],
-    'Fuel_Consumption_in_City': [fuel_consumption_city],
-    'Fuel_Consumption_in_City_Hwy': [fuel_consumption_hwy],
-    'CO2_Emissions': [co2_emissions],
-    'Make': [make],
-    'Vehicle_Class': [vehicle_class],
-    'Transmission': [transmission]
-})
-
-# For categorical features, encoding them (same as done during training)
-label_encoders = {
-    'Make': {'Ford': 0, 'Chevrolet': 1, 'BMW': 2, 'Toyota': 3, 'Nissan': 4, 'Honda': 5},
-    'Vehicle_Class': {'SUV': 0, 'Sedan': 1, 'Truck': 2, 'Coupe': 3},
-    'Transmission': {'Automatic': 0, 'Manual': 1}
-}
-
-input_data['Make'] = input_data['Make'].map(label_encoders['Make'])
-input_data['Vehicle_Class'] = input_data['Vehicle_Class'].map(label_encoders['Vehicle_Class'])
-input_data['Transmission'] = input_data['Transmission'].map(label_encoders['Transmission'])
-
-# Make prediction when the button is pressed
+# When the user presses the button, predict smog level
 if st.button("Predict Smog Level"):
+    input_data = pd.DataFrame({
+        'Engine_Size': [engine_size],
+        'Cylinders': [cylinders]
+    })
+    
+    # Make the prediction
     prediction = model.predict(input_data)[0]
-
-    # Display the prediction result
+    
     if prediction == 0:
         st.success("The predicted smog level is LOW.")
     elif prediction == 1:
